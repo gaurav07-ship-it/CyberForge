@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberForge AML Graph Detection & Investigation Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="logo-group">
+      <div class="logo-badge">CYBERFORGE</div>
+      <div>
+        <div class="logo-title">Graph-Enhanced AML Detection Service</div>
+        <div class="logo-sub">LEAKAGE-SAFE · REVERSE MESSAGE PASSING · EXPLAINABLE AI</div>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <span id="replayStatusText" style="font-size:0.8rem; font-family:var(--font-mono); color:var(--text-secondary);">
+        Stream Idle. Ready for transaction replay.
+      </span>
+      <button id="btnGalacticView" class="btn" style="background:linear-gradient(135deg, #8b5cf6, #06b6d4); color:#fff; box-shadow:0 0 14px rgba(139,92,246,0.4);">
+        🌌 Galactic Graph (Neo4j View)
+      </button>
+      <button id="btnReplayToggle" class="btn btn-secondary" data-running="false">
+        Stream Replay
+      </button>
+      <button id="btnModelBenchmark" class="btn btn-secondary">
+        Benchmarks
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI Strip -->
+  <section class="kpi-strip">
+    <div class="kpi-card">
+      <span class="kpi-label">Active AML Cases</span>
+      <span class="kpi-val" id="kpiTotalCases">0</span>
+      <span class="kpi-sub">Ranked by risk priority</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Critical Alerts (>= 80%)</span>
+      <span class="kpi-val" id="kpiCriticalCases" style="color:var(--accent-rose);">0</span>
+      <span class="kpi-sub">Immediate escalation</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Confirmed SARs Filed</span>
+      <span class="kpi-val" id="kpiConfirmedSARs" style="color:var(--accent-emerald);">0</span>
+      <span class="kpi-sub">Regulatory SAR queue</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Identified Ring Volume</span>
+      <span class="kpi-val" id="kpiLaunderedVol">$0.0k</span>
+      <span class="kpi-sub">Total illicit money flow</span>
+    </div>
+  </section>
+
+  <!-- Main Workspace -->
+  <main class="workspace-grid">
+    
+    <!-- Left Column: Case Queue -->
+    <section class="queue-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>Ranked Case Queue</span>
+          <span class="badge-count" id="queueCountBadge">Live</span>
+        </div>
+      </div>
+
+      <div class="budget-filter-bar">
+        <div class="budget-label-row">
+          <span>Daily Alert Budget Cap:</span>
+          <span id="budgetValue" style="font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);">100</span>
+        </div>
+        <input type="range" id="budgetSlider" class="budget-slider" min="10" max="250" value="100" step="5">
+      </div>
+
+      <div class="case-list" id="caseListContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Right Column: Case Detail Drawer -->
+    <section class="detail-panel">
+      
+      <div class="case-hero">
+        <div class="hero-left">
+          <h2>
+            <span id="detailCaseId">CASE-0001</span>
+            <span class="topology-pill" id="detailTopology" style="font-size:0.8rem;">RING_TOPOLOGY</span>
+            <span class="tier-badge tier-CRITICAL" id="detailRiskBadge">95% Risk</span>
+          </h2>
+          <div class="hero-sub">Multi-account connected component grouping based on graph clustering</div>
+        </div>
+        <div class="action-btn-group">
+          <button class="btn btn-sar" id="btnConfirmSAR">Confirm & File SAR</button>
+          <button class="btn btn-dismiss" id="btnDismissCase">Dismiss</button>
+          <button class="btn btn-secondary" id="btnInvestigate">Mark In Review</button>
+        </div>
+      </div>
+
+      <!-- Human-Centric Intelligence Dossier -->
+      <div class="dossier-card" id="humanDossierContainer">
+        <div class="dossier-header">
+          <div class="dossier-badge">HUMAN REASONING DOSSIER</div>
+          <h3 id="dossierHeadline" style="font-size:1.15rem; color:#f9fafb; margin-top:4px;">Analyzing account network...</h3>
+          <p id="dossierSummary" style="font-size:0.85rem; color:#9ca3af; margin-top:6px; line-height:1.4;"></p>
+        </div>
+
+        <div class="why-flagged-grid" id="whyFlaggedPoints">
+          <!-- Dynamically populated why-flagged reason cards -->
+        </div>
+
+        <div class="analogy-box" id="dossierAnalogyBox">
+          <span style="font-weight:700; color:#f59e0b;">💡 Typology Analogy:</span>
+          <span id="dossierAnalogyText" style="color:#d1d5db; margin-left:6px;"></span>
+        </div>
+
+        <div class="recommendation-box" id="dossierActionBox">
+          <span style="font-weight:700; color:#10b981;">🛡️ Investigator Action:</span>
+          <span id="dossierActionText" style="color:#d1d5db; margin-left:6px;"></span>
+        </div>
+      </div>
+
+      <!-- Interactive Subgraph Visualizer -->
+      <div class="graph-section">
+        <div class="section-title">2-Hop Interactive Network Subgraph</div>
+        <div class="canvas-container">
+          <canvas id="subgraphCanvas"></canvas>
+          <div class="graph-legend">
+            <div class="legend-item"><div class="dot" style="background:#06b6d4;"></div> Root Target Account</div>
+            <div class="legend-item"><div class="dot" style="background:#8b5cf6;"></div> Counterparty / Mule</div>
+            <div class="legend-item"><div class="dot" style="background:#f43f5e;"></div> Fund Flow Pulse</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHAP Waterfall Feature Drivers -->
+      <div class="shap-section">
+        <div class="section-title">Top Risk Attribution Drivers (SHAP Feature Importance)</div>
+        <div id="shapDriversContainer" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Member Transactions Ledger -->
+      <div>
+        <div class="section-title" style="margin-bottom:10px;">Grouped Suspicious Transfers</div>
+        <table class="tx-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Originator</th>
+              <th>Beneficiary</th>
+              <th>Channel</th>
+              <th>Amount (USD)</th>
+            </tr>
+          </thead>
+          <tbody id="txLedgerBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Research & Model Benchmark Modal -->
+  <div class="modal-overlay" id="benchmarkModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 style="font-size:1.3rem;">AML Detection Benchmark: Hypotheses & Model Comparison</h2>
+        <button class="close-btn" id="modalCloseBtn">&times;</button>
+      </div>
+
+      <div style="margin-bottom:20px; line-height:1.5; color:var(--text-secondary); font-size:0.9rem;">
+        Empirical evaluation comparing <strong>Model A (Tabular Baseline)</strong>, <strong>Model B (Tabular + Leakage-Safe Graph)</strong>, and <strong>Model C (Directed Message-Passing GNN)</strong> across identical temporal train-val-test splits.
+      </div>
+
+      <table class="tx-table" style="margin-bottom:24px;">
+        <thead>
+          <tr>
+            <th>Model Architecture</th>
+            <th>PR-AUC</th>
+            <th>F1-Score</th>
+            <th>Recall@Top100</th>
+            <th>Cycle Recall</th>
+            <th>Scatter-Gather</th>
+            <th>Fan-Out</th>
+            <th>Fan-In</th>
+          </tr>
+        </thead>
+        <tbody id="benchmarkTableBody">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+        <div style="background:rgba(17,24,39,0.7); border:1px solid var(--border-color); border-radius:10px; padding:14px;">
+          <h4 style="color:var(--accent-cyan); margin-bottom:6px;">Hypothesis H1: Topology Focus</h4>
+          <p style="font-size:0.8rem; color:#d1d5db; line-height:1.4;">
+            Graph features achieve 100% recall on complex closed loops (Cycles) and high precision on multi-hop scatter-gather layering structures.
+          </p>
+        </div>
+        <div style="background:rgba(17,24,39,0.7); border:1px solid var(--border-color); border-radius:10px; padding:14px;">
+          <h4 style="color:var(--accent-amber); margin-bottom:6px;">Hypothesis H2: Alert Budget</h4>
+          <p style="font-size:0.8rem; color:#d1d5db; line-height:1.4;">
+            At a constrained budget (Top 100/day), ranking by graph risk catches the majority of multi-hop laundering volume.
+          </p>
+        </div>
+        <div style="background:rgba(17,24,39,0.7); border:1px solid var(--border-color); border-radius:10px; padding:14px;">
+          <h4 style="color:var(--accent-emerald); margin-bottom:6px;">Hypothesis H3: Transfer Robustness</h4>
+          <p style="font-size:0.8rem; color:#d1d5db; line-height:1.4;">
+            When transferring across variants (HI to LI base rates), the graph-boosted model maintains a superior PR-AUC (0.979 vs 0.968).
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Galactic Graph (Neo4j Macro View) Modal -->
+  <div class="modal-overlay" id="galacticModal">
+    <div class="modal-content" style="width:1200px; max-width:96vw; height:90vh; display:flex; flex-direction:column; padding:20px;">
+      <div class="modal-header" style="margin-bottom:12px;">
+        <div>
+          <h2 style="font-size:1.3rem; display:flex; align-items:center; gap:8px;">
+            <span>🌌 Galactic Financial Graph</span>
+            <span class="topology-pill" style="background:rgba(6,182,212,0.2); color:#06b6d4;">NEO4J PANORAMIC CLUSTER MAP</span>
+          </h2>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">
+            Macroscopic perspective of 1,000+ accounts across 25 banks. Red pulsating stars are flagged illicit syndicates; blue/purple stars are legitimate commerce.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button id="btnCopyCypher" class="btn btn-secondary" style="font-size:0.8rem;">
+            📋 Copy Neo4j Cypher Queries
+          </button>
+          <button class="close-btn" id="galacticCloseBtn">&times;</button>
+        </div>
+      </div>
+
+      <div style="flex:1; background:#040711; border:1px solid var(--border-color); border-radius:12px; position:relative; overflow:hidden;">
+        <canvas id="galacticCanvas" style="width:100%; height:100%; cursor:grab;"></canvas>
+        <div id="galacticTooltip" style="position:absolute; display:none; background:rgba(10,14,23,0.92); backdrop-filter:blur(10px); border:1px solid var(--border-highlight); border-radius:8px; padding:10px 14px; font-size:0.8rem; pointer-events:none; z-index:20;"></div>
+        
+        <div class="graph-legend" style="bottom:16px; left:16px;">
+          <div class="legend-item"><div class="dot" style="background:#f43f5e; box-shadow:0 0 8px #f43f5e;"></div> Flagged Syndicate / Mule</div>
+          <div class="legend-item"><div class="dot" style="background:#06b6d4;"></div> Commercial Bank Hub</div>
+          <div class="legend-item"><div class="dot" style="background:#8b5cf6;"></div> Normal Account</div>
+          <div class="legend-item" style="color:#9ca3af; font-family:var(--font-mono); font-size:0.7rem;">Click node to inspect</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
